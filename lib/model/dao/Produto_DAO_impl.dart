@@ -5,23 +5,32 @@ import 'package:sqflite/sqflite.dart';
 import 'interface/Produto_DAO.dart';
 
 class ProdutoDAOImpl extends ProdutoDAO {
-  // final Future<Database> database = DB().database;
-
   @override
-  void delete(int idProduto) {
-    // TODO: implement delete
+  Future<bool> delete(int idProduto) async {
+    final Database db = await DB().database;
+    int count =
+        await db.delete('produto', where: 'id = ?', whereArgs: [idProduto]);
+    return count != 0;
   }
 
   @override
-  List<Produto> findAll() {
-    // TODO: implement findAll
-    throw UnimplementedError();
+  Future<List<Produto>> findAll() async {
+    final Database db = await DB().database;
+    var sql = "SELECT * FROM produto";
+    List<Map<String, Object?>> data = await db.rawQuery(sql);
+    List<Produto> produtos =
+        List<Produto>.from(data.map((produto) => Produto.fromJson(produto)));
+
+    return produtos;
   }
 
   @override
-  Produto findById(int idProduto) {
-    // TODO: implement findById
-    throw UnimplementedError();
+  Future<Produto> findById(int idProduto) async {
+    final Database db = await DB().database;
+    var sql = "SELECT * FROM produto WHERE id = ?";
+    var data = await db.rawQuery(sql, [idProduto]);
+    Produto produto = Produto.fromJson(data[0]);
+    return produto;
   }
 
   @override
@@ -40,6 +49,32 @@ class ProdutoDAOImpl extends ProdutoDAO {
 
     produto.id = id;
 
+    return produto;
+  }
+
+  @override
+  Future<Produto> update(Produto produto) async {
+    final Database db = await DB().database;
+
+    var sql =
+        "UPDATE produto SET ean = ?, nome = ?, descricao = ?, quantidade_estoque = ?, valor_venda = ? WHERE id = ?";
+    int id = await db.rawInsert(sql, [
+      produto.ean,
+      produto.nome,
+      produto.descricao,
+      produto.quantidadeEstoque,
+      produto.valorVenda,
+      produto.id
+    ]);
+
+    return produto;
+  }
+
+  Future<Produto> findByEan(int ean) async {
+    final Database db = await DB().database;
+    List<Map<String, Object?>> datas = await db.rawQuery("SELECT * FROM produto WHERE ean = ?", [ean]);
+    Map<String, Object?> data = datas.first;
+    Produto produto = Produto.fromJson(data);
     return produto;
   }
 }

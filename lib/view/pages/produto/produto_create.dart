@@ -1,11 +1,14 @@
+import 'dart:js_util';
+
 import 'package:flutter/material.dart';
+import 'package:psa_flutter_app/controller/produto_controller.dart';
 import 'package:psa_flutter_app/controller/produto_service.dart';
 import 'package:psa_flutter_app/model/entities/Produto.dart';
 
 class ProdutoCreate extends StatelessWidget {
   ProdutoCreate({Key? key}) : super(key: key);
 
-  ProdutoService produtoService = ProdutoService();
+  ProdutoController controller = ProdutoController();
 
   Produto produto = Produto();
 
@@ -19,9 +22,47 @@ class ProdutoCreate extends StatelessWidget {
         onChanged: onChanged);
   }
 
-  salvarProduto(Produto produto) {
-    //TODO validações
-    produtoService.salvar(produto);
+  salvarProduto(BuildContext context, Produto produto) {
+    controller.salvar(produto);
+    Navigator.pushNamed(context, '/produtos');
+  }
+
+  validateFormFields(Produto produto) {
+    produtoCheckEmpty(produto);
+    isInt(produto.ean);
+  }
+
+  produtoCheckEmpty(Produto produto) {
+    checkIsEmpty("Ean", produto.ean);
+    checkIsEmpty("Nome", produto.nome);
+    checkIsEmpty("Descricao", produto.descricao);
+    checkIsEmpty("Quantidade Estoque", produto.quantidadeEstoque);
+    checkIsEmpty("Valor Venda", produto.valorVenda);
+  }
+
+  checkIsEmpty(String campo, dynamic value) {
+    if (isEmpty(value)) {
+      throw Exception("O campo $campo está vazio!");
+    }
+  }
+
+  isEmpty(dynamic value) {
+    String stringValue = value.toString();
+    if (stringValue.trim() == "") {
+      return true;
+    }
+  }
+
+  void isInt(dynamic value) {
+    if (value is! int) {
+      throw Exception("Valor não é um Int");
+    }
+  }
+
+  isDouble(dynamic value) {
+    if (value is! double) {
+      throw Exception("Valor não é um Double");
+    }
   }
 
   @override
@@ -63,7 +104,7 @@ class ProdutoCreate extends StatelessWidget {
                 produto.valorVenda = double.parse(val);
               }),
           ElevatedButton(
-            onPressed: () => salvarProduto(produto),
+            onPressed: () => salvarProduto(context, produto),
             child: const Text("Salvar"),
           )
         ],

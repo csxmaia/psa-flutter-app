@@ -5,31 +5,32 @@ class ProdutoService {
   ProdutoDAOImpl dao = ProdutoDAOImpl();
 
   Future<List<Produto>> buscarTodos() async {
-    List<Produto> produtoList = <Produto>[];
-
-    Produto produto = Produto();
-    produto.ean = 1233333;
-    produto.nome = "produto1";
-    produto.descricao = "produto1";
-    produto.quantidadeEstoque = 20;
-    produto.valorVenda = 200;
-
-    produtoList.add(produto);
-
-    Produto produto2 = Produto();
-    produto2.ean = 1233333;
-    produto2.nome = "produto1";
-    produto2.descricao = "produto1";
-    produto2.quantidadeEstoque = 20;
-    produto2.valorVenda = 200;
-
-    produtoList.add(produto2);
-
-    return produtoList;
+    Future<List<Produto>> produtos = dao.findAll();
+    return produtos;
   }
 
-  Future<Produto> salvar(Produto produto) async {
+  Future<Produto> criar(Produto produto) async {
+    _validarExistenciaPorEan(produto.ean!);
     Produto produtoSalvo = await dao.save(produto);
     return produtoSalvo;
+  }
+
+  Future<Produto> alterar(Produto produto) async {
+    _validarExistenciaPorEan(produto.ean!);
+    Produto produtoSalvo = await dao.update(produto);
+    return produtoSalvo;
+  }
+
+  Future<bool> deletar(int id) async {
+    bool deletado = await dao.delete(id);
+    return deletado;
+  }
+
+  Future<bool> _validarExistenciaPorEan(int ean) async {
+    Produto produto = await dao.findByEan(ean);
+    if (produto.id == null) {
+      return true;
+    }
+    throw Exception("Já existe um produto com o codigo EAN informado!");
   }
 }

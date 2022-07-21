@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:psa_flutter_app/controller/produto_controller.dart';
 import 'package:psa_flutter_app/controller/produto_service.dart';
 import 'package:psa_flutter_app/model/entities/Produto.dart';
 
@@ -9,12 +11,10 @@ class ProdutoList extends StatefulWidget {
   State<ProdutoList> createState() => _ProdutoListState();
 }
 
-ProdutoService produtoService = ProdutoService();
+ProdutoController controller = ProdutoController();
 
-Future<List<Produto>> buscarProdutos() {
-  Future<List<Produto>> produtos = produtoService.buscarTodos();
-
-  return produtos;
+void excluirProduto(int id) {
+  Future<bool> deletado = controller.deletar(id);
 }
 
 class _ProdutoListState extends State<ProdutoList> {
@@ -28,7 +28,7 @@ class _ProdutoListState extends State<ProdutoList> {
         )
       ]),
       body: FutureBuilder(
-          future: buscarProdutos(),
+          future: controller.buscar(),
           builder: (context, AsyncSnapshot<List<Produto>> dados) {
             if (!dados.hasData) return const CircularProgressIndicator();
             var produtos = dados.data!;
@@ -38,7 +38,12 @@ class _ProdutoListState extends State<ProdutoList> {
                   var produto = produtos[contador];
                   return ListTile(
                       title: Text(produto.nome.toString()),
-                      subtitle: Text(produto.ean.toString()));
+                      subtitle: Text(produto.ean.toString()),
+                      onTap: () => (Navigator.pushNamed(
+                          context, "/produto/view", arguments: produto)),
+                      trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => excluirProduto(produto.id!)));
                 });
           }),
     );
